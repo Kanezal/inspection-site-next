@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Inspection {
+    id                 Int       @id @default(autoincrement())
+    inspectorDiscordId String
+    description        String?
+    legion             String
+    stage              Int       @default(0)
+    startDate          DateTime  @default(now())
+    endDate            DateTime  @default(now())
+    Soldier            InspectingSoldier[]
+}
+
+model Inspector {
+    id                   Int       @id @default(autoincrement())
+    idn                  String
+    callSign             String
+    rank                 String
+    discordId            String
+    isInSecretDepartment Boolean   @default(false)
+    Soldier              InspectingSoldier[]
+}
+
+model InspectingSoldier {
+    id                      Int        @id @default(autoincrement())
+    inspectionId            Int
+    idn                     String
+    callSign                String
+    rank                    String
+    position                String
+    dateOfEnlistment        String
+    dateOfPromotion         String
+    discordId               String
+    daysOfLeave             Int        @default(0)
+    trainingSessions        Int        @default(0)
+    lecturesAndCertificates Int        @default(0)
+    inspectionStage2Score   Float?
+    inspectorStage2Id       Int?
+    inspectionStage3Result  String?    @default("Пока не прошёл.")
+    inspection              Inspection @relation(fields: [inspectionId], references: [id])
+    inspectorStage2         Inspector? @relation(fields: [inspectorStage2Id], references: [id])
+}
