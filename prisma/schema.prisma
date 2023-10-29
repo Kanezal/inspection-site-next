@@ -7,28 +7,34 @@ generator client {
 
 datasource db {
     provider  = "postgresql"
-    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+    url       = env("POSTGRES_PRISMA_URL")
+    directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Inspection {
-    id                 Int       @id @default(autoincrement())
-    inspectorDiscordId String
+    id                 Int                 @id @default(autoincrement())
+    inspectorId        Int
     description        String?
     legion             String
-    stage              Int       @default(0)
-    startDate          DateTime  @default(now())
-    endDate            DateTime  @default(now())
+    stage              Int                 @default(0)
+    startDate          DateTime            @default(now())
+    endDate            DateTime            @default(now())
+    createdAt          DateTime            @default(now())
+    updatedAt          DateTime            @default(now()) @updatedAt
+    inspector          Inspector           @relation(fields: [inspectorId], references: [id])
     Soldier            InspectingSoldier[]
 }
 
 model Inspector {
-    id                   Int       @id @default(autoincrement())
+    id                   Int                 @id @default(autoincrement())
     idn                  String
     callSign             String
     rank                 String
-    discordId            String
-    isInSecretDepartment Boolean   @default(false)
+    discordId            String              @unique
+    isInSecretDepartment Boolean             @default(false)
+    createdAt            DateTime            @default(now())
+    updatedAt            DateTime            @default(now()) @updatedAt
+    inspections          Inspection[]
     Soldier              InspectingSoldier[]
 }
 
@@ -45,9 +51,11 @@ model InspectingSoldier {
     daysOfLeave             Int        @default(0)
     trainingSessions        Int        @default(0)
     lecturesAndCertificates Int        @default(0)
-    inspectionStage2Score   Float?
+    inspectionStage2Score   Float?     
     inspectorStage2Id       Int?
     inspectionStage3Result  String?    @default("Пока не прошёл.")
     inspection              Inspection @relation(fields: [inspectionId], references: [id])
     inspectorStage2         Inspector? @relation(fields: [inspectorStage2Id], references: [id])
+    createdAt               DateTime   @default(now())
+    updatedAt               DateTime   @default(now()) @updatedAt
 }
